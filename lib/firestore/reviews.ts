@@ -1,4 +1,5 @@
 import { db } from '@/lib/firebase/config'
+import type { Firestore } from 'firebase/firestore'
 import {
   addDoc,
   collection,
@@ -28,7 +29,7 @@ export interface ReviewWithUser extends Review {
 
 export async function addReview(providerId: string, userId: string, nota: number, comentario: string) {
   if (!db) throw new Error('Firebase não disponível')
-  const dbRef = db
+  const dbRef = db as Firestore
   // Verificar se o usuário já avaliou este prestador
   const existingReview = await getUserReview(providerId, userId)
   
