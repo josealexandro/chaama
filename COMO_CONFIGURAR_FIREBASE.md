@@ -43,6 +43,26 @@ Após preencher o `.env.local`:
 1. Pare o servidor (Ctrl+C)
 2. Execute `npm run dev` novamente
 
+## Passo 5: Configurar Regras do Firestore
+
+Para que o sistema de avaliações funcione, você precisa configurar as regras de segurança do Firestore:
+
+1. No Firebase Console, vá em **Firestore Database** > **Regras**
+2. Cole as regras do arquivo `REGRAS_FIRESTORE.md`
+3. Clique em **Publicar**
+
+📄 **Veja o arquivo `REGRAS_FIRESTORE.md` para as regras completas**
+
+## Passo 6: Configurar Regras do Storage
+
+Para que o upload de imagens funcione, você precisa configurar as regras de segurança do Storage:
+
+1. No Firebase Console, vá em **Storage** > **Regras**
+2. Cole as regras do arquivo `REGRAS_STORAGE.md`
+3. Clique em **Publicar**
+
+📄 **Veja o arquivo `REGRAS_STORAGE.md` para as regras completas**
+
 ## ⚠️ Importante
 
 - **NÃO** compartilhe o arquivo `.env.local` (ele já está no .gitignore)

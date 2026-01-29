@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/lib/contexts/AuthContext'
 import { getProviderById } from '@/lib/firestore/providers'
-import { listProviderReviews } from '@/lib/firestore/reviews'
+import { listProviderReviews, ReviewWithUser } from '@/lib/firestore/reviews'
 import { Provider } from '@/types'
+import ReviewList from '@/components/Reviews/ReviewList'
+import Header from '@/components/Layout/Header'
 
 function formatPrice(value?: number) {
   if (value === undefined || value === null) return ''
@@ -36,7 +38,8 @@ export default function ProviderProfilePage({ params }: { params: { id: string }
   const { currentUser } = useAuth()
   const [provider, setProvider] = useState<Provider | null>(null)
   const [loading, setLoading] = useState(true)
-  const [reviewCount, setReviewCount] = useState<number>(0)
+  const [reviews, setReviews] = useState<ReviewWithUser[]>([])
+  const [reviewsLoading, setReviewsLoading] = useState(true)
   
   // Verifica se é o próprio prestador vendo seu perfil
   const isOwner = currentUser?.uid === providerId
@@ -45,12 +48,16 @@ export default function ProviderProfilePage({ params }: { params: { id: string }
     let mounted = true
     async function load() {
       setLoading(true)
-      const data = await getProviderById(providerId)
-      const reviews = await listProviderReviews(providerId)
+      setReviewsLoading(true)
+      const [data, reviewsData] = await Promise.all([
+        getProviderById(providerId),
+        listProviderReviews(providerId)
+      ])
       if (!mounted) return
       setProvider(data)
-      setReviewCount(reviews?.length ?? 0)
+      setReviews(reviewsData || [])
       setLoading(false)
+      setReviewsLoading(false)
     }
     load()
     return () => {
@@ -67,31 +74,39 @@ export default function ProviderProfilePage({ params }: { params: { id: string }
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="h-48 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 animate-pulse" />
-        </div>
-      </main>
+      <>
+        <Header />
+        <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="h-48 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 animate-pulse" />
+          </div>
+        </main>
+      </>
     )
   }
 
   if (!provider) {
     return (
-      <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 text-center">
-            <p className="text-gray-700 dark:text-gray-300">Prestador não encontrado.</p>
-            <Link href="/" className="mt-4 inline-block text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
-              Voltar ao Início
-            </Link>
+      <>
+        <Header />
+        <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 text-center">
+              <p className="text-gray-700 dark:text-gray-300">Prestador não encontrado.</p>
+              <Link href="/" className="mt-4 inline-block text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
+                Voltar ao Início
+              </Link>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </>
     )
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <>
+      <Header />
+      <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Botão voltar */}
         <Link
@@ -105,9 +120,9 @@ export default function ProviderProfilePage({ params }: { params: { id: string }
         {/* Perfil do prestador */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
           <div className="p-4 sm:p-6">
-            <div className="flex items-start gap-4 mb-4">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-4">
               {/* Foto de perfil circular */}
-              <div className="w-24 h-24 rounded-full border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 overflow-hidden flex-shrink-0">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 overflow-hidden flex-shrink-0">
                 {provider.fotoUrl ? (
                   <img
                     src={provider.fotoUrl}
@@ -116,22 +131,22 @@ export default function ProviderProfilePage({ params }: { params: { id: string }
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700">
-                    <span className="text-3xl text-gray-400">👤</span>
+                    <span className="text-2xl sm:text-3xl text-gray-400">👤</span>
                   </div>
                 )}
               </div>
               
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h1 className="text-xl font-semibold text-gray-900 dark:text-white">{provider.nome}</h1>
+              <div className="flex-1 text-center sm:text-left w-full sm:w-auto">
+                <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                  <h1 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">{provider.nome}</h1>
                   {provider.premium && (
-                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 border border-yellow-300">
+                    <span className="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 border border-yellow-300">
                       Premium
                     </span>
                   )}
                 </div>
 
-                <div className="mt-1">
+                <div className="mt-1 flex flex-col items-center sm:items-start">
                   <Stars value={provider.notaMedia || 0} />
                   <p className="text-sm text-gray-700 dark:text-gray-300">{provider.servico}</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">{provider.cidade}</p>
@@ -180,13 +195,29 @@ export default function ProviderProfilePage({ params }: { params: { id: string }
               )}
             </div>
 
-            <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-              {reviewCount > 0 ? `${reviewCount} avaliações` : 'Sem avaliações ainda'}
-            </div>
           </div>
+        </div>
+
+        {/* Lista de Avaliações */}
+        <div className="mt-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mb-4">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+              Avaliações ({reviews.length})
+            </h2>
+            {!isOwner && currentUser && (
+              <Link
+                href={`/prestador/${providerId}/avaliar`}
+                className="text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium"
+              >
+                + Deixar Avaliação
+              </Link>
+            )}
+          </div>
+          <ReviewList reviews={reviews} loading={reviewsLoading} />
         </div>
       </div>
     </main>
+    </>
   )
 }
 

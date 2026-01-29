@@ -8,6 +8,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
  * @returns URL pública da imagem
  */
 export async function uploadImage(file: File, path: string): Promise<string> {
+  if (!storage) throw new Error('Firebase Storage não disponível')
   const storageRef = ref(storage, path)
   await uploadBytes(storageRef, file)
   const url = await getDownloadURL(storageRef)

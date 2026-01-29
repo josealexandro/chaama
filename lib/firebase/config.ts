@@ -21,45 +21,30 @@ const firebaseConfig: FirebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || '',
 }
 
-// Validate Firebase configuration (only on server-side)
-const isServer = typeof window === 'undefined'
+// Só inicializa no cliente (navegador). No servidor/build (Vercel, next build) não roda Firebase.
+let app: FirebaseApp | null = null
+let _auth: Auth | null = null
+let _db: Firestore | null = null
+let _storage: FirebaseStorage | null = null
 
-if (isServer) {
-  const requiredEnvVars = [
+if (typeof window !== 'undefined') {
+  const missing = [
     'NEXT_PUBLIC_FIREBASE_API_KEY',
     'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
     'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
     'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET',
     'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
     'NEXT_PUBLIC_FIREBASE_APP_ID',
-  ]
-
-  const missingVars = requiredEnvVars.filter(
-    (varName) => !process.env[varName]
-  )
-
-  if (missingVars.length > 0) {
-    throw new Error(
-      `Firebase configuration is missing the following environment variables: ${missingVars.join(', ')}\n` +
-      `Please create a .env.local file in the root directory with these variables.\n` +
-      `See env.example for a template.\n` +
-      `Make sure to restart the Next.js dev server after creating/updating .env.local`
-    )
+  ].filter((key) => !process.env[key])
+  if (missing.length === 0) {
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : (getApps()[0] as FirebaseApp)
+    _auth = getAuth(app)
+    _db = getFirestore(app)
+    _storage = getStorage(app)
   }
 }
 
-// Initialize Firebase
-let app: FirebaseApp
-if (getApps().length === 0) {
-  app = initializeApp(firebaseConfig)
-} else {
-  app = getApps()[0]
-}
-
-// Initialize Firebase services
-export const auth: Auth = getAuth(app)
-export const db: Firestore = getFirestore(app)
-export const storage: FirebaseStorage = getStorage(app)
-
+export const auth = _auth
+export const db = _db
+export const storage = _storage
 export default app
-

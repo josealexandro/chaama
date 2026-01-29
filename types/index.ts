@@ -39,3 +39,16 @@ export interface Review {
   criadoEm: Date
 }
 
+// Interface de anúncio
+export interface Ad {
+  id: string
+  titulo: string
+  descricao: string
+  imagemUrl: string
+  linkUrl?: string
+  cidade: string
+  endereco?: string
+  userId?: string
+  ativo: boolean
+  criadoEm: Date
+}

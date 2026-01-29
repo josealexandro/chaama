@@ -14,6 +14,7 @@ import { normalizeText } from '@/lib/utils/normalize'
 const PROVIDERS = 'providers'
 
 export async function upsertProvider(userId: string, data: Omit<Provider, 'userId' | 'notaMedia' | 'ativo'>) {
+  if (!db) throw new Error('Firebase não disponível')
   const providerDoc = doc(db, PROVIDERS, userId)
   const payload: any = {
     userId,
@@ -41,6 +42,7 @@ export async function upsertProvider(userId: string, data: Omit<Provider, 'userI
 }
 
 export async function getProviderById(providerId: string): Promise<Provider | null> {
+  if (!db) return null
   const ref = doc(db, PROVIDERS, providerId)
   const snap = await getDoc(ref)
   return snap.exists() ? (snap.data() as Provider) : null
@@ -52,6 +54,7 @@ export interface ListProvidersFilters {
 }
 
 export async function listProviders(filters: ListProvidersFilters): Promise<Provider[]> {
+  if (!db) return []
   const col = collection(db, PROVIDERS)
   const constraints = []
   if (filters.servico) constraints.push(where('servicoLower', '==', normalizeText(filters.servico)))

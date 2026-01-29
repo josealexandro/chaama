@@ -33,6 +33,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!auth || !db) {
+      setLoading(false)
+      return
+    }
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user)
       
@@ -63,6 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const signIn = async (email: string, password: string) => {
+    if (!auth) throw new Error('Firebase Auth não disponível')
     await signInWithEmailAndPassword(auth, email, password)
   }
 
@@ -74,6 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     cidade: string,
     tipo: UserType
   ) => {
+    if (!auth || !db) throw new Error('Firebase não disponível')
     const userCredential = await createUserWithEmailAndPassword(auth, email, password)
     const user = userCredential.user
 
@@ -94,6 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signInWithGoogle = async () => {
+    if (!auth || !db) throw new Error('Firebase não disponível')
     const provider = new GoogleAuthProvider()
     const result = await signInWithPopup(auth, provider)
     const user = result.user
@@ -117,7 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const logout = async () => {
-    await signOut(auth)
+    if (auth) await signOut(auth)
     setUserData(null)
   }
 
