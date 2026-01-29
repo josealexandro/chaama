@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { listProviders } from '@/lib/firestore/providers'
 import { Provider } from '@/types'
 import AdsSidebar from '@/components/Ads/AdsSidebar'
@@ -13,7 +13,7 @@ function onlyDigits(value: string | undefined) {
   return value.replace(/\D+/g, '')
 }
 
-export default function ResultsPage() {
+function ResultsPageContent() {
   const params = useSearchParams()
   const servico = params.get('servico') || ''
   const cidade = params.get('cidade') || ''
@@ -149,4 +149,21 @@ export default function ResultsPage() {
   )
 }
 
-
+export default function ResultsPage() {
+  return (
+    <Suspense
+      fallback={
+        <>
+          <Header />
+          <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+              <div className="h-24 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 animate-pulse" />
+            </div>
+          </main>
+        </>
+      }
+    >
+      <ResultsPageContent />
+    </Suspense>
+  )
+}
