@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useAuth } from '@/lib/contexts/AuthContext'
 import { getProviderById } from '@/lib/firestore/providers'
 import { listProviderReviews, ReviewWithUser } from '@/lib/firestore/reviews'
@@ -122,12 +123,14 @@ export default function ProviderProfilePage({ params }: { params: { id: string }
           <div className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-4">
               {/* Foto de perfil circular */}
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 overflow-hidden flex-shrink-0">
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 overflow-hidden flex-shrink-0">
                 {provider.fotoUrl ? (
-                  <img
+                  <Image
                     src={provider.fotoUrl}
                     alt={`Foto de ${provider.nome}`}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="96px"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700">

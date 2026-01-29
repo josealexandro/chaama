@@ -252,11 +252,14 @@ export default function ProviderSignupPage() {
             </label>
             <div className="flex items-center gap-4">
               {fotoPreview && (
-                <img
-                  src={fotoPreview}
-                  alt="Preview"
-                  className="w-20 h-20 rounded-full object-cover border-2 border-gray-300"
-                />
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={fotoPreview}
+                    alt="Preview"
+                    className="w-20 h-20 rounded-full object-cover border-2 border-gray-300"
+                  />
+                </>
               )}
               <input
                 id="foto"

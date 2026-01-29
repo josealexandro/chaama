@@ -31,11 +31,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     applyThemeToDom(preferred)
   }, [])
 
-  const setTheme = (t: ThemeMode) => {
+  const setTheme = useCallback((t: ThemeMode) => {
     setThemeState(t)
     localStorage.setItem(STORAGE_KEY, t)
     applyThemeToDom(t)
-  }
+  }, [])
 
   const toggleTheme = useCallback(() => {
     setThemeState((prev) => (prev === 'dark' ? 'light' : 'dark'))
