@@ -53,7 +53,7 @@ function EditarAnuncioPageInner() {
       setLoading(false)
     }
     load()
-  }, [id, currentUser?.uid, router, toast])
+  }, [id, currentUser, router, toast])
 
   const handleImagemChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
