@@ -37,12 +37,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false)
       return
     }
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const authRef = auth
+    const dbRef = db
+    const unsubscribe = onAuthStateChanged(authRef, async (user) => {
       setCurrentUser(user)
       
       if (user) {
-        // Buscar dados do usuário no Firestore
-        const userDoc = await getDoc(doc(db, 'users', user.uid))
+        // Buscar dados do usuário no Firestore (dbRef já validado no início do effect)
+        const userDoc = await getDoc(doc(dbRef, 'users', user.uid))
         if (userDoc.exists()) {
           const data = userDoc.data()
           setUserData({
