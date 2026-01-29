@@ -28,19 +28,29 @@ let _db: Firestore | null = null
 let _storage: FirebaseStorage | null = null
 
 if (typeof window !== 'undefined') {
-  const missing = [
+  const requiredKeys = [
     'NEXT_PUBLIC_FIREBASE_API_KEY',
     'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
     'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
     'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET',
     'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
     'NEXT_PUBLIC_FIREBASE_APP_ID',
-  ].filter((key) => !process.env[key])
-  if (missing.length === 0) {
-    app = getApps().length === 0 ? initializeApp(firebaseConfig) : (getApps()[0] as FirebaseApp)
-    _auth = getAuth(app)
-    _db = getFirestore(app)
-    _storage = getStorage(app)
+  ]
+  const missing = requiredKeys.filter((key) => !process.env[key]?.trim())
+  if (missing.length > 0) {
+    console.warn(
+      '[Chaama] Firebase não inicializado: variáveis faltando (ou faça um novo deploy na Vercel):',
+      missing.join(', ')
+    )
+  } else {
+    try {
+      app = getApps().length === 0 ? initializeApp(firebaseConfig) : (getApps()[0] as FirebaseApp)
+      _auth = getAuth(app)
+      _db = getFirestore(app)
+      _storage = getStorage(app)
+    } catch (err) {
+      console.error('[Chaama] Erro ao inicializar Firebase:', err)
+    }
   }
 }
 
