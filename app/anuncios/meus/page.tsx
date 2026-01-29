@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import Header from '@/components/Layout/Header'
 import ProtectedRoute from '@/components/Auth/ProtectedRoute'
 import { useAuth } from '@/lib/contexts/AuthContext'
@@ -95,10 +96,12 @@ function MyAdsPageInner() {
                   className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden hover:shadow-md transition-shadow"
                 >
                   <div className="relative h-48 bg-gray-200 dark:bg-gray-700">
-                    <img
+                    <Image
                       src={ad.imagemUrl}
                       alt={ad.titulo}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
                     {!ad.ativo && (
                       <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
