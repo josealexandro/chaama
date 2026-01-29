@@ -480,6 +480,7 @@ const nome = user?.nome || 'Sem nome'
 - ✅ Edição de anúncios
 - ✅ Sidebar de anúncios na página de resultados
 - ✅ Notificações toast (sucesso/erro)
+- ✅ Firebase inicializado apenas no cliente (deploy Vercel)
 
 ---
 
