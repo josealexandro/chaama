@@ -2,6 +2,7 @@
 
 import { Ad } from '@/types'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface AdCardProps {
   ad: Ad
@@ -11,11 +12,13 @@ export default function AdCard({ ad }: AdCardProps) {
   const content = (
     <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
       {ad.imagemUrl && (
-        <div className="w-full h-32 sm:h-40 bg-gray-200 dark:bg-gray-700 overflow-hidden">
-          <img
+        <div className="relative w-full h-32 sm:h-40 bg-gray-200 dark:bg-gray-700 overflow-hidden">
+          <Image
             src={ad.imagemUrl}
             alt={ad.titulo}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, 50vw"
           />
         </div>
       )}

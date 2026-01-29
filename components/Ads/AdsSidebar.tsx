@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { listAds } from '@/lib/firestore/ads'
 import { Ad } from '@/types'
 import AdCard from './AdCard'
@@ -56,11 +57,13 @@ export default function AdsSidebar({ cidade }: AdsSidebarProps) {
         {ads.map((ad) => (
           <div key={ad.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
             {ad.imagemUrl && (
-              <div className="w-full h-24 bg-gray-200 dark:bg-gray-700 overflow-hidden">
-                <img
+              <div className="relative w-full h-24 bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                <Image
                   src={ad.imagemUrl}
                   alt={ad.titulo}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="200px"
                 />
               </div>
             )}
