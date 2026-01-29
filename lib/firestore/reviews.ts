@@ -28,13 +28,14 @@ export interface ReviewWithUser extends Review {
 
 export async function addReview(providerId: string, userId: string, nota: number, comentario: string) {
   if (!db) throw new Error('Firebase não disponível')
+  const dbRef = db
   // Verificar se o usuário já avaliou este prestador
   const existingReview = await getUserReview(providerId, userId)
   
-  const providerRef = doc(db, PROVIDERS, providerId)
+  const providerRef = doc(dbRef, PROVIDERS, providerId)
   
   // Atualizar nota média do prestador e criar/atualizar avaliação em uma transação
-  await runTransaction(db, async (tx) => {
+  await runTransaction(dbRef, async (tx) => {
     const snap = await tx.get(providerRef)
     if (!snap.exists()) throw new Error('Prestador não encontrado')
     
@@ -56,7 +57,7 @@ export async function addReview(providerId: string, userId: string, nota: number
       }
       
       // Atualizar avaliação existente
-      const reviewRef = doc(db, REVIEWS, existingReview.id)
+      const reviewRef = doc(dbRef, REVIEWS, existingReview.id)
       tx.update(reviewRef, {
         nota,
         comentario,
@@ -68,7 +69,7 @@ export async function addReview(providerId: string, userId: string, nota: number
       media = num === 1 ? nota : (media * (num - 1) + nota) / num
       
       // Criar nova avaliação
-      const reviewRef = doc(collection(db, REVIEWS))
+      const reviewRef = doc(collection(dbRef, REVIEWS))
       tx.set(reviewRef, {
         providerId,
         userId,
