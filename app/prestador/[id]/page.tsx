@@ -166,9 +166,8 @@ export default function ProviderProfilePage({ params }: { params: { id: string }
               </div>
             )}
 
-            <div className="mt-5 flex flex-col sm:flex-row gap-3">
+            <div className="mt-5 flex flex-col sm:flex-row flex-wrap gap-3">
               {isOwner ? (
-                // Botão de edição para o próprio prestador
                 <Link
                   href="/prestador/cadastro"
                   className="inline-flex items-center justify-center bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
@@ -176,7 +175,6 @@ export default function ProviderProfilePage({ params }: { params: { id: string }
                   ✏️ Editar Perfil
                 </Link>
               ) : (
-                // Botões para visitantes
                 <>
                   {waHref && (
                     <a
@@ -186,6 +184,16 @@ export default function ProviderProfilePage({ params }: { params: { id: string }
                       className="inline-flex items-center justify-center bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"
                     >
                       Chamar no WhatsApp
+                    </a>
+                  )}
+                  {provider.linkMapa && (
+                    <a
+                      href={provider.linkMapa}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 py-2 px-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                    >
+                      📍 Ver no mapa
                     </a>
                   )}
                   <Link

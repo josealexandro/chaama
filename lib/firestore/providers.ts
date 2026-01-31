@@ -32,11 +32,9 @@ export async function upsertProvider(userId: string, data: Omit<Provider, 'userI
     cidadeLower: normalizeText(data.cidade),
   }
   
-  // Só adiciona fotoUrl se não for undefined
-  if (data.fotoUrl) {
-    payload.fotoUrl = data.fotoUrl
-  }
-  
+  if (data.fotoUrl) payload.fotoUrl = data.fotoUrl
+  if (data.linkMapa !== undefined) payload.linkMapa = data.linkMapa || null
+
   await setDoc(providerDoc, payload, { merge: true })
   return userId
 }

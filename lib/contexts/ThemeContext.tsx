@@ -20,13 +20,18 @@ function applyThemeToDom(theme: ThemeMode) {
   else root.classList.remove('dark')
 }
 
+function getStoredTheme(): ThemeMode {
+  const stored = localStorage.getItem(STORAGE_KEY) as ThemeMode | null
+  if (stored === 'dark' || stored === 'light') return stored
+  return window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ? 'dark' : 'light'
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  // Estado inicial sempre 'light' para servidor e cliente coincidirem (evita hydration error)
   const [theme, setThemeState] = useState<ThemeMode>('light')
 
   useEffect(() => {
-    const stored = (localStorage.getItem(STORAGE_KEY) as ThemeMode | null) ?? null
-    const preferred: ThemeMode =
-      stored ?? (window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ? 'dark' : 'light')
+    const preferred = getStoredTheme()
     setThemeState(preferred)
     applyThemeToDom(preferred)
   }, [])
@@ -38,18 +43,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const toggleTheme = useCallback(() => {
-    setThemeState((prev) => (prev === 'dark' ? 'light' : 'dark'))
+    setThemeState((prev) => {
+      const next = prev === 'dark' ? 'light' : 'dark'
+      localStorage.setItem(STORAGE_KEY, next)
+      applyThemeToDom(next)
+      return next
+    })
   }, [])
-
-  useEffect(() => {
-    if (theme === 'dark') {
-      localStorage.setItem(STORAGE_KEY, 'dark')
-      applyThemeToDom('dark')
-    } else {
-      localStorage.setItem(STORAGE_KEY, 'light')
-      applyThemeToDom('light')
-    }
-  }, [theme])
 
   const value = useMemo(() => ({ theme, setTheme, toggleTheme }), [theme, setTheme, toggleTheme])
 

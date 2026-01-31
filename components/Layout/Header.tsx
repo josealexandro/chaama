@@ -22,15 +22,17 @@ export default function Header() {
     <header className="bg-white shadow-sm border-b border-gray-200 dark:bg-gray-950 dark:border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <Link href="/" className="flex items-center gap-2">
-            <Image
-              src="/logo.png"
-              alt="Chaama"
-              width={180}
-              height={60}
-              className="h-10 sm:h-12 w-auto"
-              priority
-            />
+          <Link href="/" className="flex items-center shrink-0">
+            <span className="relative inline-flex h-10 w-24 items-center justify-center overflow-visible rounded-md bg-black dark:bg-transparent sm:h-11 sm:w-28 md:h-12 md:w-32">
+              <Image
+                src="/logoOriginal.png"
+                alt="Chaama"
+                width={280}
+                height={94}
+                className="h-14 sm:h-16 md:h-20 w-auto object-contain"
+                priority
+              />
+            </span>
           </Link>
 
           {/* Desktop Navigation */}

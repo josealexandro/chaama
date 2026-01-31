@@ -40,6 +40,16 @@ export default function AdCard({ ad }: AdCardProps) {
               {ad.endereco ? '' : '📍 '}{ad.cidade}
             </p>
           )}
+          {(ad.endereco || ad.cidade) && (
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([ad.endereco, ad.cidade].filter(Boolean).join(', '))}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block mt-1 text-xs text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium"
+            >
+              Ver no mapa
+            </a>
+          )}
         </div>
       </div>
     </div>

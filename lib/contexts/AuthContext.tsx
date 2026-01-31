@@ -23,6 +23,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, nome: string, telefone: string, cidade: string, tipo: UserType) => Promise<void>
   signInWithGoogle: () => Promise<void>
   logout: () => Promise<void>
+  refreshUserData: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -50,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUserData({
             uid: user.uid,
             nome: data.nome,
-            tipo: data.tipo,
+            tipo: data.tipo === 'prestador' ? 'prestador' : 'cliente',
             telefone: data.telefone,
             cidade: data.cidade,
             criadoEm: data.criadoEm?.toDate() || new Date(),
@@ -89,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await updateProfile(user, { displayName: nome })
 
     // Criar documento no Firestore
-    const userData: Omit<User, 'criadoEm'> & { criadoEm: any } = {
+    const payload: Omit<User, 'criadoEm'> & { criadoEm: any } = {
       uid: user.uid,
       nome,
       tipo,
@@ -98,7 +99,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       criadoEm: serverTimestamp(),
     }
 
-    await setDoc(doc(db, 'users', user.uid), userData)
+    await setDoc(doc(db, 'users', user.uid), payload)
+
+    // Atualizar state imediatamente: onAuthStateChanged pode ter rodado antes do setDoc
+    // e lido o doc quando ainda não existia, deixando userData null ou desatualizado
+    setUserData({
+      uid: user.uid,
+      nome,
+      tipo,
+      telefone,
+      cidade,
+      criadoEm: new Date(),
+    })
   }
 
   const signInWithGoogle = async () => {
@@ -130,6 +142,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUserData(null)
   }
 
+  const refreshUserData = async () => {
+    if (!currentUser || !db) return
+    const userDoc = await getDoc(doc(db, 'users', currentUser.uid))
+    if (userDoc.exists()) {
+      const data = userDoc.data()
+      setUserData({
+        uid: currentUser.uid,
+        nome: data.nome,
+        tipo: data.tipo === 'prestador' ? 'prestador' : 'cliente',
+        telefone: data.telefone,
+        cidade: data.cidade,
+        criadoEm: data.criadoEm?.toDate() || new Date(),
+      })
+    }
+  }
+
   const value: AuthContextType = {
     currentUser,
     userData,
@@ -138,6 +166,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signUp,
     signInWithGoogle,
     logout,
+    refreshUserData,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

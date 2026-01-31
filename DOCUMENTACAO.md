@@ -486,5 +486,7 @@ const nome = user?.nome || 'Sem nome'
 
 ## Deploy na Vercel
 
-Para publicar a aplicação na Vercel, siga o guia em **[DEPLOY_VERCEL.md](./DEPLOY_VERCEL.md)**. Em resumo: suba o código para o Git, conecte o repositório na Vercel, configure as variáveis de ambiente do Firebase e faça o deploy. Não esqueça de adicionar o domínio da Vercel em **Authorized domains** no Firebase (Authentication).
+Para publicar a aplicação na Vercel, siga o guia em **[DEPLOY_VERCEL.md](./DEPLOY_VERCEL.md)**. Em resumo: suba o código para o Git, conecte o repositório na Vercel, configure as variáveis de ambiente do Firebase e **faça um novo deploy (push)** depois de salvar as variáveis — o build precisa rodar de novo para embutir as `NEXT_PUBLIC_*` no bundle. Não esqueça de adicionar o domínio da Vercel em **Authorized domains** no Firebase (Authentication).
+
+**Local:** Se alterar o `.env.local`, é preciso **reiniciar o servidor** (`Ctrl+C` e depois `npm run dev`) para as variáveis serem carregadas.
 

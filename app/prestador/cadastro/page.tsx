@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, FormEvent } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/contexts/AuthContext'
 import { upsertProvider, getProviderById } from '@/lib/firestore/providers'
@@ -29,6 +30,7 @@ export default function ProviderSignupPage() {
   const [descricao, setDescricao] = useState('')
   const [whatsapp, setWhatsapp] = useState('')
   const [precoMedio, setPrecoMedio] = useState<number | ''>('')
+  const [linkMapa, setLinkMapa] = useState('')
   const [foto, setFoto] = useState<File | null>(null)
   const [fotoPreview, setFotoPreview] = useState<string>('')
   const [fotoUrlExistente, setFotoUrlExistente] = useState<string | undefined>(undefined)
@@ -55,6 +57,7 @@ export default function ProviderSignupPage() {
         setDescricao(existing.descricao)
         setWhatsapp(existing.whatsapp || '')
         setPrecoMedio(existing.precoMedio || '')
+        setLinkMapa(existing.linkMapa || '')
         if (existing.fotoUrl) {
           setFotoPreview(existing.fotoUrl)
           setFotoUrlExistente(existing.fotoUrl)
@@ -124,16 +127,17 @@ export default function ProviderSignupPage() {
       }
 
       console.log('Salvando dados do prestador...')
-      const servicoFinal = servico === 'Outra' ? servicoCustom.trim() : servico
+      const servicoFinalValue = servico === 'Outra' ? servicoCustom.trim() : servico
       await upsertProvider(currentUser.uid, {
         nome,
-        servico: servicoFinal,
+        servico: servicoFinalValue,
         cidade,
         descricao,
         whatsapp,
         precoMedio: typeof precoMedio === 'number' ? precoMedio : undefined,
         premium: false,
         fotoUrl,
+        linkMapa: linkMapa.trim() || undefined,
       })
       console.log('Dados salvos com sucesso!')
       router.push(`/prestador/${currentUser.uid}`)
@@ -147,15 +151,27 @@ export default function ProviderSignupPage() {
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-lg mx-auto bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
-        {isEditing && (
-          <button
-            type="button"
-            onClick={() => router.push(`/prestador/${currentUser?.uid}`)}
-            className="mb-4 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
           >
-            ← Voltar ao Perfil
-          </button>
-        )}
+            <span>←</span>
+            <span>Voltar ao Início</span>
+          </Link>
+          {isEditing && currentUser && (
+            <>
+              <span className="text-gray-400 dark:text-gray-500">|</span>
+              <button
+                type="button"
+                onClick={() => router.push(`/prestador/${currentUser.uid}`)}
+                className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              >
+                Voltar ao Perfil
+              </button>
+            </>
+          )}
+        </div>
         <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
           {isEditing ? 'Editar Perfil' : 'Cadastro de Prestador'}
         </h1>
@@ -286,7 +302,22 @@ export default function ProviderSignupPage() {
           </div>
 
           <div>
-            <label htmlFor="preco" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="linkMapa" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Link do Google Maps (opcional)
+            </label>
+            <input
+              id="linkMapa"
+              type="url"
+              value={linkMapa}
+              onChange={(e) => setLinkMapa(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-black dark:text-white dark:bg-gray-700"
+              placeholder="https://maps.google.com/..."
+            />
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Cole o link do endereço no Google Maps para que clientes possam abrir no mapa.</p>
+          </div>
+
+          <div>
+            <label htmlFor="preco" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Preço médio (R$ / dia)
             </label>
             <input

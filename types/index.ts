@@ -22,6 +22,7 @@ export interface Provider {
   fotoUrl?: string
   precoMedio?: number
   premium?: boolean
+  linkMapa?: string
   notaMedia: number
   numAvaliacoes?: number
   ativo: boolean
