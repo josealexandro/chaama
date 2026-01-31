@@ -22,14 +22,14 @@ export default function Header() {
     <header className="bg-white shadow-sm border-b border-gray-200 dark:bg-gray-950 dark:border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <Link href="/" className="flex items-center shrink-0">
-            <span className="relative inline-flex h-14 w-32 items-center justify-center overflow-visible rounded-md bg-black dark:bg-transparent sm:h-11 sm:w-28 md:h-12 md:w-32">
+          <Link href="/" className="flex items-center shrink-0 -ml-8 mt-2 sm:ml-0 sm:mt-0">
+            <span className="relative inline-flex h-20 w-44 items-center justify-center overflow-visible rounded-md bg-black dark:bg-transparent sm:h-11 sm:w-28 md:h-12 md:w-32">
               <Image
                 src="/logoOriginal.png"
                 alt="Chaama"
                 width={280}
                 height={94}
-                className="h-20 sm:h-16 md:h-20 w-auto object-contain"
+                className="h-32 sm:h-16 md:h-20 w-auto object-contain"
                 priority
               />
             </span>
