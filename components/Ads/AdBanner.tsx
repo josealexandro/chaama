@@ -16,23 +16,21 @@ import type { AdCampaign } from '@/types'
  */
 export default function AdBanner() {
   const { userData } = useAuth()
+  const city = userData?.cidade?.trim() ?? ''
+  const state = (userData as { estado?: string })?.estado?.trim() ?? ''
   const [campaign, setCampaign] = useState<AdCampaign | null>(null)
   const [loading, setLoading] = useState(true)
   const viewsIncremented = useRef(false)
 
   useEffect(() => {
+    if (!city) {
+      setLoading(false)
+      return
+    }
     let mounted = true
     async function load() {
-      const city = userData?.cidade?.trim()
-      if (!city) {
-        setLoading(false)
-        return
-      }
       try {
-        const list = await getActiveAds({
-          city,
-          state: (userData as { estado?: string })?.estado?.trim(),
-        })
+        const list = await getActiveAds({ city, state: state || undefined })
         if (!mounted) return
         if (list.length === 0) {
           setCampaign(null)
@@ -52,14 +50,14 @@ export default function AdBanner() {
     return () => {
       mounted = false
     }
-  }, [userData?.cidade, (userData as { estado?: string })?.estado])
+  }, [city, state])
 
   // Incrementar views quando o banner for exibido (uma vez por montagem)
   useEffect(() => {
     if (!campaign || viewsIncremented.current) return
     viewsIncremented.current = true
     incrementAdViews(campaign.id).catch(() => {})
-  }, [campaign?.id])
+  }, [campaign])
 
   const handleClick = () => {
     if (!campaign) return
