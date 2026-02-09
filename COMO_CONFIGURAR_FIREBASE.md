@@ -63,6 +63,21 @@ Para que o upload de imagens funcione, você precisa configurar as regras de seg
 
 📄 **Veja o arquivo `REGRAS_STORAGE.md` para as regras completas**
 
+## Campanhas de anúncio (banners)
+
+A collection **adCampaigns** usa uma query com `status`, `region.city` e (opcional) `region.state`. Na primeira vez que um anúncio for exibido, o Firestore pode pedir para criar um **índice composto**. Se aparecer um erro com link, abra o link no navegador e crie o índice (leva alguns minutos).
+
+## Cloud Functions (expiração de campanhas)
+
+Para marcar campanhas expiradas automaticamente (a cada 1 hora):
+
+1. Instale o Firebase CLI: `npm i -g firebase-tools`
+2. Faça login: `firebase login`
+3. No projeto: `cd functions`, depois `npm install`
+4. Na raiz do projeto: `firebase deploy --only functions`
+
+Requer plano Blaze (pay-as-you-go) no Firebase. O agendamento usa o fuso `America/Sao_Paulo`.
+
 ## ⚠️ Importante
 
 - **NÃO** compartilhe o arquivo `.env.local` (ele já está no .gitignore)

@@ -46,10 +46,10 @@ chaama/
 │   ├── login/             # Página de login
 │   ├── cadastro/          # Página de cadastro
 │   ├── resultados/        # Lista de prestadores encontrados
-│   ├── anuncios/          # Área de anúncios
-│   │   ├── criar/         # Criar novo anúncio
-│   │   ├── editar/[id]/   # Editar anúncio existente
-│   │   └── meus/          # Lista de anúncios do usuário
+│   ├── dashboard/         # Área de campanhas (banners)
+│   │   └── ads/           # Minhas campanhas e criar campanha
+│   │       ├── page.tsx   # Lista de campanhas do usuário
+│   │       └── criar/     # Criar nova campanha
 │   └── prestador/          # Área do prestador
 │       ├── [id]/          # Perfil público do prestador
 │       │   ├── page.tsx   # Visualização do perfil
@@ -58,7 +58,7 @@ chaama/
 │       └── dashboard/     # Dashboard do prestador
 │
 ├── components/            # Componentes React reutilizáveis
-│   ├── Ads/              # Componentes de anúncios
+│   ├── Ads/              # Banner de campanhas (AdBanner)
 │   ├── Auth/             # Componentes de autenticação
 │   ├── Layout/           # Componentes de layout (Header)
 │   ├── Reviews/          # Componentes de avaliações
@@ -124,38 +124,18 @@ function MeuComponente() {
 - A nota média é calculada automaticamente
 - Se o usuário já avaliou, a avaliação é atualizada (não cria duplicata)
 
-### 4. Anúncios Locais (`lib/firestore/ads.ts`)
+### 4. Campanhas de anúncio (`lib/firestore/adCampaigns.ts`)
 
 **Funções principais:**
-- `listAds(cidade?)` - Lista anúncios ativos, opcionalmente filtrados por cidade
-- `createAd()` - Cria novo anúncio (requer `userId`)
-- `getAdById()` - Busca anúncio por ID
-- `updateAd()` - Atualiza anúncio existente
-- `getUserAds()` - Lista anúncios de um usuário específico
-
-**Como usar:**
-```typescript
-import { listAds, createAd } from '@/lib/firestore/ads'
-
-// Listar anúncios de uma cidade
-const ads = await listAds('São Paulo')
-
-// Criar anúncio
-const adId = await createAd({
-  titulo: 'Loja de Materiais',
-  descricao: 'Materiais de construção',
-  imagemUrl: 'https://...',
-  cidade: 'São Paulo',
-  userId: currentUser.uid,
-})
-```
+- `createCampaignAd()` - Cria nova campanha (título, imagem, link, região, plano em dias)
+- `getUserCampaigns(companyId)` - Lista campanhas do usuário
+- `getActiveAds(userLocation)` - Lista campanhas ativas para exibição (banner na home)
+- `incrementAdClicks(adId)` / `incrementAdViews(adId)` - Métricas
 
 **Importante:**
-- Anúncios são filtrados automaticamente pela cidade do usuário na página inicial
-- Na página de resultados, aparecem na sidebar quando há cidade na busca
-- Campo `cidadeLower` é normalizado para busca (não mexer!)
-- Campo `userId` identifica o criador do anúncio
-- Apenas o criador pode editar seu próprio anúncio
+- Campanhas têm prazo (3, 7 ou 30 dias) e região (cidade + estado)
+- O banner na home exibe uma campanha aleatória ativa para a região do usuário logado
+- Expiração (status → expired) é feita por Cloud Function agendada
 
 ### 5. Autenticação - Recuperação de Senha (`lib/contexts/AuthContext.tsx`)
 
@@ -196,11 +176,10 @@ app/prestador/[id]/page.tsx
 ```
 
 **Páginas principais:**
-- `/` - Página inicial com busca e anúncios filtrados por cidade do usuário
-- `/resultados` - Lista de prestadores com sidebar de anúncios (se houver cidade na busca)
-- `/anuncios/criar` - Criar novo anúncio (requer autenticação)
-- `/anuncios/meus` - Lista de anúncios do usuário logado
-- `/anuncios/editar/[id]` - Editar anúncio existente (só o criador pode editar)
+- `/` - Página inicial com busca e banner de campanha (região do usuário logado)
+- `/resultados` - Lista de prestadores
+- `/dashboard/ads` - Minhas campanhas (lista)
+- `/dashboard/ads/criar` - Criar nova campanha (requer autenticação)
 
 ---
 

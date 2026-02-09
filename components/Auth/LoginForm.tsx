@@ -5,6 +5,22 @@ import { useAuth } from '@/lib/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
+const mensagensErroLogin: Record<string, string> = {
+  'auth/invalid-credential': 'E-mail ou senha incorretos. Confira os dados e tente novamente.',
+  'auth/invalid-email': 'O e-mail informado não é válido.',
+  'auth/user-not-found': 'Não encontramos uma conta com este e-mail. Que tal se cadastrar?',
+  'auth/wrong-password': 'Senha incorreta. Tente novamente ou recupere sua senha.',
+  'auth/too-many-requests': 'Muitas tentativas. Aguarde um pouco e tente de novo.',
+  'auth/network-request-failed': 'Problema de conexão. Verifique sua internet e tente novamente.',
+  'auth/popup-closed-by-user': 'Login com Google cancelado. Tente novamente quando quiser.',
+  'auth/popup-blocked': 'O navegador bloqueou a janela do Google. Permita pop-ups e tente de novo.',
+}
+
+function mensagemAmigavel(err: unknown, fallback: string): string {
+  const code = (err as { code?: string })?.code
+  return (code && mensagensErroLogin[code]) || fallback
+}
+
 export default function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -21,8 +37,8 @@ export default function LoginForm() {
     try {
       await signIn(email, password)
       router.push('/')
-    } catch (err: any) {
-      setError(err.message || 'Erro ao fazer login')
+    } catch (err: unknown) {
+      setError(mensagemAmigavel(err, 'Não foi possível entrar. Tente novamente em instantes.'))
     } finally {
       setLoading(false)
     }
@@ -35,8 +51,8 @@ export default function LoginForm() {
     try {
       await signInWithGoogle()
       router.push('/')
-    } catch (err: any) {
-      setError(err.message || 'Erro ao fazer login com Google')
+    } catch (err: unknown) {
+      setError(mensagemAmigavel(err, 'Não foi possível entrar com o Google. Tente novamente.'))
     } finally {
       setLoading(false)
     }
@@ -76,8 +92,16 @@ export default function LoginForm() {
         </div>
 
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg">
-            {error}
+          <div
+            role="alert"
+            className="flex gap-3 items-start rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-200 px-4 py-3 shadow-sm"
+          >
+            <span className="flex-shrink-0 mt-0.5" aria-hidden>
+              <svg className="w-5 h-5 text-amber-500 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </span>
+            <p className="text-sm leading-relaxed">{error}</p>
           </div>
         )}
 

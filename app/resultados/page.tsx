@@ -5,7 +5,6 @@ import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useMemo, useState } from 'react'
 import { listProviders } from '@/lib/firestore/providers'
 import { Provider } from '@/types'
-import AdsSidebar from '@/components/Ads/AdsSidebar'
 import Header from '@/components/Layout/Header'
 
 function onlyDigits(value: string | undefined) {
@@ -136,12 +135,6 @@ function ResultsPageContent() {
               </div>
             </div>
 
-            {/* Sidebar - Anúncios (só aparece em telas grandes e se houver cidade) */}
-            {cidade && (
-              <aside className="w-full lg:w-80 shrink-0">
-                <AdsSidebar cidade={cidade} />
-              </aside>
-            )}
           </div>
         </div>
       </main>

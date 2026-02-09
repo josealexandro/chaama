@@ -28,6 +28,12 @@ service firebase.storage {
       allow write: if request.auth != null; // Usuário logado pode fazer upload
     }
     
+    // Pasta de campanhas de anúncio (banners) – usuário logado pode fazer upload
+    match /adCampaigns/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
   }
 }
 ```

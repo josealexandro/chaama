@@ -2,7 +2,7 @@
 
 import Header from '@/components/Layout/Header'
 import Link from 'next/link'
-import AdsList from '@/components/Ads/AdsList'
+import AdBanner from '@/components/Ads/AdBanner'
 import { useAuth } from '@/lib/contexts/AuthContext'
 
 const CATEGORIES = [
@@ -77,8 +77,10 @@ export default function Home() {
             </div>
           </form>
 
-          {/* Anúncios Locais */}
-          <AdsList cidade={userData?.cidade} />
+          {/* Banner de campanha (região do usuário logado) */}
+          <div className="mb-8">
+            <AdBanner />
+          </div>
 
           {/* Categorias */}
           <div className="bg-white dark:bg-gray-800 shadow-sm rounded-xl p-4 sm:p-6">

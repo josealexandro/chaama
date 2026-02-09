@@ -44,16 +44,10 @@ export default function Header() {
                   Olá, <span className="font-medium">{userData?.nome || 'Usuário'}</span>
                 </span>
                 <Link
-                  href="/anuncios/meus"
+                  href="/dashboard/ads"
                   className="text-sm text-gray-700 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
                 >
-                  Meus Anúncios
-                </Link>
-                <Link
-                  href="/anuncios/criar"
-                  className="text-sm text-gray-700 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
-                >
-                  Criar Anúncio
+                  Campanhas
                 </Link>
                 {userData?.tipo === 'prestador' && (
                   <Link
@@ -124,18 +118,11 @@ export default function Header() {
                   Olá, <span className="font-medium">{userData?.nome || 'Usuário'}</span>
                 </div>
                 <Link
-                  href="/anuncios/meus"
+                  href="/dashboard/ads"
                   onClick={() => setMenuOpen(false)}
                   className="block px-2 py-2 text-sm text-gray-700 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
                 >
-                  Meus Anúncios
-                </Link>
-                <Link
-                  href="/anuncios/criar"
-                  onClick={() => setMenuOpen(false)}
-                  className="block px-2 py-2 text-sm text-gray-700 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
-                >
-                  Criar Anúncio
+                  Campanhas
                 </Link>
                 {userData?.tipo === 'prestador' && (
                   <Link

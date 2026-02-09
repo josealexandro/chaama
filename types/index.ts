@@ -40,16 +40,32 @@ export interface Review {
   criadoEm: Date
 }
 
-// Interface de anúncio
-export interface Ad {
+// Região para campanhas de anúncio (banner)
+export interface AdRegion {
+  city: string
+  state: string
+  country: string
+}
+
+export type AdCampaignStatus = 'active' | 'expired' | 'paused'
+
+// Campanha de anúncio (banner com prazo, região e métricas)
+export interface AdCampaign {
   id: string
-  titulo: string
-  descricao: string
-  imagemUrl: string
-  linkUrl?: string
-  cidade: string
-  endereco?: string
-  userId?: string
-  ativo: boolean
-  criadoEm: Date
+  companyId: string
+  title: string
+  imageUrl: string
+  link: string
+  region: AdRegion
+  startAt: Date
+  endAt: Date
+  status: AdCampaignStatus
+  clicks: number
+  views: number
+  createdAt: Date
+}
+
+export interface UserLocation {
+  city: string
+  state?: string
 }
