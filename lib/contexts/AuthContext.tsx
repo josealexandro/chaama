@@ -20,7 +20,7 @@ interface AuthContextType {
   userData: User | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<void>
-  signUp: (email: string, password: string, nome: string, telefone: string, cidade: string, tipo: UserType) => Promise<void>
+  signUp: (email: string, password: string, nome: string, telefone: string, cidade: string, tipo: UserType) => Promise<string>
   signInWithGoogle: () => Promise<void>
   logout: () => Promise<void>
   refreshUserData: () => Promise<void>
@@ -55,6 +55,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             telefone: data.telefone,
             cidade: data.cidade,
             criadoEm: data.criadoEm?.toDate() || new Date(),
+            subscriptionStatus: data.subscriptionStatus,
+            stripeCustomerId: data.stripeCustomerId,
+            stripeSubscriptionId: data.stripeSubscriptionId,
           })
         } else {
           setUserData(null)
@@ -81,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     telefone: string,
     cidade: string,
     tipo: UserType
-  ) => {
+  ): Promise<string> => {
     if (!auth || !db) throw new Error('Firebase não disponível')
     const userCredential = await createUserWithEmailAndPassword(auth, email, password)
     const user = userCredential.user
@@ -89,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Atualizar perfil do Firebase Auth
     await updateProfile(user, { displayName: nome })
 
-    // Criar documento no Firestore
+    // Criar documento no Firestore (prestador começa com subscriptionStatus pending até pagar no Stripe)
     const payload: Omit<User, 'criadoEm'> & { criadoEm: any } = {
       uid: user.uid,
       nome,
@@ -98,11 +101,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       cidade,
       criadoEm: serverTimestamp(),
     }
+    if (tipo === 'prestador') {
+      (payload as Record<string, unknown>).subscriptionStatus = 'pending'
+    }
 
     await setDoc(doc(db, 'users', user.uid), payload)
 
-    // Atualizar state imediatamente: onAuthStateChanged pode ter rodado antes do setDoc
-    // e lido o doc quando ainda não existia, deixando userData null ou desatualizado
+    // Atualizar state imediatamente
     setUserData({
       uid: user.uid,
       nome,
@@ -110,7 +115,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       telefone,
       cidade,
       criadoEm: new Date(),
+      ...(tipo === 'prestador' && { subscriptionStatus: 'pending' as const }),
     })
+
+    return user.uid
   }
 
   const signInWithGoogle = async () => {
@@ -154,6 +162,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         telefone: data.telefone,
         cidade: data.cidade,
         criadoEm: data.criadoEm?.toDate() || new Date(),
+        subscriptionStatus: data.subscriptionStatus,
+        stripeCustomerId: data.stripeCustomerId,
+        stripeSubscriptionId: data.stripeSubscriptionId,
       })
     }
   }

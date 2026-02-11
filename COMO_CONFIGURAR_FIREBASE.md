@@ -78,6 +78,19 @@ Para marcar campanhas expiradas automaticamente (a cada 1 hora):
 
 Requer plano Blaze (pay-as-you-go) no Firebase. O agendamento usa o fuso `America/Sao_Paulo`.
 
+## Stripe (assinatura prestador)
+
+Para quem se cadastra como **prestador**, o app redireciona para o Stripe Checkout (R$ 19,99/mês). Configure no `.env.local`:
+
+- **STRIPE_SECRET_KEY** – Chave secreta (sk_test_... ou sk_live_...) no [Stripe Dashboard](https://dashboard.stripe.com/apikeys).
+- **STRIPE_WEBHOOK_SECRET** – Secret do webhook (whsec_...). No Stripe: Developers > Webhooks > Add endpoint. URL: `https://seu-dominio.com/api/stripe/webhook`. Eventos: `checkout.session.completed`, `customer.subscription.deleted`.
+- **STRIPE_PRICE_ID** – ID do preço recorrente (price_...). No Stripe: Products > criar produto “Plano Prestador” > preço recorrente R$ 19,99/mês > copiar o ID do preço.
+
+O webhook atualiza o Firestore (campo `subscriptionStatus`) usando o **Firebase Admin SDK**. Para isso funcionar no servidor:
+
+- **Local:** Baixe o JSON da conta de serviço no Firebase (Project settings > Service accounts > Generate new private key). Defina no `.env.local`: **FIREBASE_SERVICE_ACCOUNT_JSON** com o conteúdo completo do JSON (uma linha).
+- **Vercel:** Na configuração do projeto, adicione a variável **FIREBASE_SERVICE_ACCOUNT_JSON** com o mesmo JSON.
+
 ## ⚠️ Importante
 
 - **NÃO** compartilhe o arquivo `.env.local` (ele já está no .gitignore)

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/contexts/AuthContext'
 
 interface ProtectedRouteProps {
@@ -17,6 +17,7 @@ export default function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { currentUser, userData, loading } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     if (loading) return
@@ -30,7 +31,18 @@ export default function ProtectedRoute({
       router.push('/')
       return
     }
-  }, [currentUser, userData, loading, requireAuth, requireType, router])
+
+    // Prestador sem assinatura ativa: redireciona para página de assinatura (exceto se já estiver nela)
+    if (
+      requireType === 'prestador' &&
+      userData?.tipo === 'prestador' &&
+      userData?.subscriptionStatus === 'pending' &&
+      !pathname?.startsWith('/prestador/assinatura')
+    ) {
+      router.push('/prestador/assinatura')
+      return
+    }
+  }, [currentUser, userData, loading, requireAuth, requireType, router, pathname])
 
   if (loading) {
     return (
@@ -48,6 +60,15 @@ export default function ProtectedRoute({
   }
 
   if (requireType && userData?.tipo !== requireType) {
+    return null
+  }
+
+  // Prestador pendente de pagamento: mostra conteúdo só na página de assinatura
+  if (
+    requireType === 'prestador' &&
+    userData?.subscriptionStatus === 'pending' &&
+    !pathname?.startsWith('/prestador/assinatura')
+  ) {
     return null
   }
 

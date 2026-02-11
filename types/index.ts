@@ -1,6 +1,9 @@
 // Tipos de usuário
 export type UserType = 'cliente' | 'prestador'
 
+// Status da assinatura Stripe (só para prestador)
+export type SubscriptionStatus = 'pending' | 'active' | 'canceled' | 'past_due'
+
 // Interface do usuário
 export interface User {
   uid: string
@@ -9,6 +12,10 @@ export interface User {
   telefone: string
   cidade: string
   criadoEm: Date
+  // Assinatura (apenas prestador): pending = ainda não pagou, active = em dia
+  subscriptionStatus?: SubscriptionStatus
+  stripeCustomerId?: string
+  stripeSubscriptionId?: string
 }
 
 // Interface do prestador

@@ -36,10 +36,26 @@ export default function SignUpForm() {
     setLoading(true)
 
     try {
-      await signUp(email, password, nome, telefone, cidade, tipo)
-      router.push(tipo === 'prestador' ? '/prestador/dashboard' : '/')
-    } catch (err: any) {
-      setError(err.message || 'Erro ao criar conta')
+      const uid = await signUp(email, password, nome, telefone, cidade, tipo)
+      // Prestador: redireciona para o Stripe Checkout (assinatura R$ 19,99)
+      if (tipo === 'prestador') {
+        const res = await fetch('/api/stripe/create-checkout-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uid }),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (data.url) {
+          window.location.href = data.url
+          return
+        }
+        setError(data.error || 'Erro ao abrir página de pagamento. Tente novamente.')
+        setLoading(false)
+        return
+      }
+      router.push('/')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Erro ao criar conta')
     } finally {
       setLoading(false)
     }
