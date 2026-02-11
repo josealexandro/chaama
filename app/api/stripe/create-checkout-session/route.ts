@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const stripe = new Stripe(secretKey, { apiVersion: '2024-11-20.acacia' })
+    const stripe = new Stripe(secretKey, { apiVersion: '2026-01-28.clover' })
     const origin = request.headers.get('origin') || request.nextUrl.origin
 
     const session = await stripe.checkout.sessions.create({

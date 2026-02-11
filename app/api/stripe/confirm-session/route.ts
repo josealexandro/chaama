@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const stripe = new Stripe(secretKey, { apiVersion: '2024-11-20.acacia' })
+    const stripe = new Stripe(secretKey, { apiVersion: '2026-01-28.clover' })
     const session = await stripe.checkout.sessions.retrieve(session_id)
 
     if (session.metadata?.uid !== uid && session.client_reference_id !== uid) {
