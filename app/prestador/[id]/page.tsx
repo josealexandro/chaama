@@ -36,14 +36,40 @@ function Stars({ value }: { value: number }) {
 
 export default function ProviderProfilePage({ params }: { params: { id: string } }) {
   const providerId = params.id
-  const { currentUser } = useAuth()
+  const { currentUser, userData, refreshUserData } = useAuth()
   const [provider, setProvider] = useState<Provider | null>(null)
   const [loading, setLoading] = useState(true)
   const [reviews, setReviews] = useState<ReviewWithUser[]>([])
   const [reviewsLoading, setReviewsLoading] = useState(true)
+  const [canceling, setCanceling] = useState(false)
+  const [cancelDone, setCancelDone] = useState(false)
   
   // Verifica se é o próprio prestador vendo seu perfil
   const isOwner = currentUser?.uid === providerId
+  const canCancelSubscription = isOwner && userData?.subscriptionStatus === 'active'
+
+  const handleCancelarAssinatura = async () => {
+    if (!currentUser?.uid || !window.confirm('Tem certeza que deseja cancelar sua assinatura? Você terá acesso até o fim do período atual.')) return
+    setCanceling(true)
+    try {
+      const res = await fetch('/api/stripe/cancel-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: currentUser.uid }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok && data.ok) {
+        setCancelDone(true)
+        await refreshUserData()
+      } else {
+        alert(data?.error || 'Não foi possível cancelar.')
+      }
+    } catch {
+      alert('Erro ao cancelar. Tente novamente.')
+    } finally {
+      setCanceling(false)
+    }
+  }
 
   useEffect(() => {
     let mounted = true
@@ -147,6 +173,11 @@ export default function ProviderProfilePage({ params }: { params: { id: string }
                       Premium
                     </span>
                   )}
+                  {canCancelSubscription && (
+                    <span className="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border border-green-300 dark:border-green-700">
+                      Assinatura em dia
+                    </span>
+                  )}
                 </div>
 
                 <div className="mt-1 flex flex-col items-center sm:items-start">
@@ -226,6 +257,26 @@ export default function ProviderProfilePage({ params }: { params: { id: string }
           </div>
           <ReviewList reviews={reviews} loading={reviewsLoading} />
         </div>
+
+        {/* Cancelar assinatura: só para o dono, com assinatura ativa, discreto */}
+        {canCancelSubscription && (
+          <div className="mt-10 pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
+            {cancelDone ? (
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Cancelamento agendado. Você terá acesso até o fim do período atual.
+              </p>
+            ) : (
+              <button
+                type="button"
+                onClick={handleCancelarAssinatura}
+                disabled={canceling}
+                className="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 underline disabled:opacity-50"
+              >
+                {canceling ? 'Cancelando...' : 'Cancelar assinatura'}
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </main>
     </>

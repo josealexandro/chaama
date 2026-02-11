@@ -6,13 +6,14 @@ import { useAuth } from '@/lib/contexts/AuthContext'
 import Header from '@/components/Layout/Header'
 import ProtectedRoute from '@/components/Auth/ProtectedRoute'
 import { useRouter } from 'next/navigation'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 /**
- * Página de assinatura do prestador:
- * - success=1: pagamento concluído, pode acessar o painel
+ * Página de assinatura do prestador (só para pagamento pendente e retorno do Stripe):
+ * - success=1: pagamento concluído, botão "Ir para o painel"
  * - canceled=1: usuário cancelou no Stripe, pode tentar de novo
- * - sem params e subscriptionStatus pending: mostra botão para ir ao pagamento
+ * - pending: botão "Assinar e pagar"
+ * - active: redireciona para o painel (info e cancelar ficam no painel)
  */
 function AssinaturaPageInner() {
   const searchParams = useSearchParams()
@@ -24,6 +25,13 @@ function AssinaturaPageInner() {
   const canceled = searchParams.get('canceled') === '1'
   const sessionId = searchParams.get('session_id')
   const [confirming, setConfirming] = useState(false)
+
+  // Quem já tem assinatura ativa vai para o painel (informações de assinatura ficam lá)
+  useEffect(() => {
+    if (userData?.subscriptionStatus === 'active' && !success) {
+      router.replace('/prestador/dashboard')
+    }
+  }, [userData?.subscriptionStatus, success, router])
 
   const handleIrParaPagamento = useCallback(async () => {
     if (!userData?.uid) return
