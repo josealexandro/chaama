@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { UserType } from '@/types'
+import { auth } from '@/lib/firebase/config'
 
 export default function SignUpForm() {
   const [nome, setNome] = useState('')
@@ -16,7 +17,7 @@ export default function SignUpForm() {
   const [tipo, setTipo] = useState<UserType>('cliente')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const { signUp, signInWithGoogle } = useAuth()
+  const { signUp, signInWithGoogle, refreshUserData } = useAuth()
   const router = useRouter()
 
   const handleSubmit = async (e: FormEvent) => {
@@ -37,19 +38,38 @@ export default function SignUpForm() {
 
     try {
       const uid = await signUp(email, password, nome, telefone, cidade, tipo)
-      // Prestador: redireciona para o Stripe Checkout (assinatura R$ 19,99)
+
+      // Prestador: decidir no servidor se exige assinatura ou é gratuito (ver api/user/finalize-prestador-signup e REQUIRE_STRIPE_SUBSCRIPTION).
+      // REVERSÃO: quando voltar a cobrar, basta definir REQUIRE_STRIPE_SUBSCRIPTION=true; o fluxo Stripe abaixo volta a ser usado.
       if (tipo === 'prestador') {
-        const res = await fetch('/api/stripe/create-checkout-session', {
+        const idToken = await auth?.currentUser?.getIdToken()
+        if (!idToken) {
+          setError('Erro ao obter sessão. Faça login novamente.')
+          setLoading(false)
+          return
+        }
+        const res = await fetch('/api/user/finalize-prestador-signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+        })
+        const data = await res.json().catch(() => ({}))
+        if (data.requireSubscription === false) {
+          await refreshUserData()
+          router.push('/prestador/cadastro')
+          return
+        }
+        // Exige assinatura: fluxo Stripe (código original mantido para reversão).
+        const stripeRes = await fetch('/api/stripe/create-checkout-session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ uid }),
         })
-        const data = await res.json().catch(() => ({}))
-        if (data.url) {
-          window.location.href = data.url
+        const stripeData = await stripeRes.json().catch(() => ({}))
+        if (stripeData.url) {
+          window.location.href = stripeData.url
           return
         }
-        setError(data.error || 'Erro ao abrir página de pagamento. Tente novamente.')
+        setError(stripeData.error || 'Erro ao abrir página de pagamento. Tente novamente.')
         setLoading(false)
         return
       }

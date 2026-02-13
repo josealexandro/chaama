@@ -5,8 +5,20 @@ import Stripe from 'stripe'
  * Cria uma sessão do Stripe Checkout para assinatura recorrente (plano prestador).
  * Só deve ser chamado para usuários que se cadastraram como prestador (uid no metadata).
  * Variáveis de ambiente: STRIPE_SECRET_KEY, STRIPE_PRICE_ID (id do preço recorrente no Stripe).
+ *
+ * REVERSÃO (voltar a cobrar): quando REQUIRE_STRIPE_SUBSCRIPTION não for "false", este endpoint
+ * segue criando a sessão normalmente. Quando for "false" (prestador gratuito), retorna 400 para
+ * não abrir o Stripe por engano.
  */
 export async function POST(request: NextRequest) {
+  // FLAG: se prestador estiver gratuito, não criar sessão (evita redirecionar para pagamento).
+  if (process.env.REQUIRE_STRIPE_SUBSCRIPTION === 'false') {
+    return NextResponse.json(
+      { error: 'Assinatura não exigida no momento. Cadastro de prestador está gratuito.' },
+      { status: 400 }
+    )
+  }
+
   const secretKey = process.env.STRIPE_SECRET_KEY
   const priceId = process.env.STRIPE_PRICE_ID
 

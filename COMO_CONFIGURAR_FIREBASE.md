@@ -80,7 +80,14 @@ Requer plano Blaze (pay-as-you-go) no Firebase. O agendamento usa o fuso `Americ
 
 ## Stripe (assinatura prestador)
 
-Para quem se cadastra como **prestador**, o app redireciona para o Stripe Checkout (R$ 19,99/mês). Configure no `.env.local`:
+Para quem se cadastra como **prestador**, o app pode redirecionar para o Stripe Checkout (R$ 19,99/mês) ou permitir cadastro gratuito, conforme a variável **REQUIRE_STRIPE_SUBSCRIPTION**:
+
+- **REQUIRE_STRIPE_SUBSCRIPTION=false** – Prestador **gratuito**: não redireciona para o Stripe; o usuário vai direto para o cadastro de prestador.
+- **Omitir** ou **REQUIRE_STRIPE_SUBSCRIPTION=true** – Exige assinatura: redireciona para o Stripe Checkout após o signup de prestador.
+
+**Para reverter e voltar a cobrar:** defina `REQUIRE_STRIPE_SUBSCRIPTION=true` no `.env.local` (e na Vercel) e faça redeploy.
+
+Demais variáveis no `.env.local`:
 
 - **STRIPE_SECRET_KEY** – Chave secreta (sk_test_... ou sk_live_...) no [Stripe Dashboard](https://dashboard.stripe.com/apikeys).
 - **STRIPE_WEBHOOK_SECRET** – Secret do webhook (whsec_...). No Stripe: Developers > Webhooks > Add endpoint. URL: `https://seu-dominio.com/api/stripe/webhook`. Eventos: `checkout.session.completed`, `customer.subscription.deleted`.

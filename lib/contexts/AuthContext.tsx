@@ -92,7 +92,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Atualizar perfil do Firebase Auth
     await updateProfile(user, { displayName: nome })
 
-    // Criar documento no Firestore (prestador começa com subscriptionStatus pending até pagar no Stripe)
+    // Criar documento no Firestore. Prestador começa com subscriptionStatus 'pending'; o API finalize-prestador-signup
+    // (conforme REQUIRE_STRIPE_SUBSCRIPTION) pode alterar para 'active' se cadastro for gratuito.
     const payload: Omit<User, 'criadoEm'> & { criadoEm: any } = {
       uid: user.uid,
       nome,

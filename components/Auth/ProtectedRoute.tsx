@@ -32,7 +32,8 @@ export default function ProtectedRoute({
       return
     }
 
-    // Prestador sem assinatura ativa: redireciona para página de assinatura (exceto se já estiver nela)
+    // Prestador sem assinatura ativa (subscriptionStatus === 'pending'): redireciona para assinatura Stripe.
+    // Quando REQUIRE_STRIPE_SUBSCRIPTION=false, novos prestadores recebem 'active' no finalize-prestador-signup e não caem aqui.
     if (
       requireType === 'prestador' &&
       userData?.tipo === 'prestador' &&
