@@ -43,26 +43,33 @@ export async function POST(request: NextRequest) {
   try {
     const db = getAdminDb()
     const userRef = db.collection('users').doc(uid)
-    const payload: Record<string, unknown> = {
-      uid,
-      nome: nome.trim(),
-      telefone: telefone.trim(),
-      cidade: (cidade as string).trim(),
-      tipo,
-      criadoEm: admin.firestore.FieldValue.serverTimestamp(),
+    const existing = await userRef.get()
+
+    // Só cria se ainda não existir (evita que usuário mude o próprio tipo chamando a API de novo).
+    if (!existing.exists) {
+      const payload: Record<string, unknown> = {
+        uid,
+        nome: nome.trim(),
+        telefone: telefone.trim(),
+        cidade: (cidade as string).trim(),
+        tipo,
+        criadoEm: admin.firestore.FieldValue.serverTimestamp(),
+      }
+      if (tipo === 'prestador') {
+        payload.subscriptionStatus = 'pending'
+      }
+      await userRef.set(payload)
     }
-    if (tipo === 'prestador') {
-      payload.subscriptionStatus = 'pending'
-    }
-    await userRef.set(payload)
-    // Devolve os dados do usuário para o cliente atualizar o estado sem ler do Firestore (evita "Missing or insufficient permissions").
+
+    // Sempre devolve os dados atuais (criados agora ou já existentes) para o cliente atualizar o estado.
+    const data = existing.exists ? existing.data() : { nome: nome.trim(), telefone: telefone.trim(), cidade: (cidade as string).trim(), tipo, subscriptionStatus: tipo === 'prestador' ? 'pending' : undefined }
     const user = {
       uid,
-      nome: (nome as string).trim(),
-      telefone: (telefone as string).trim(),
-      cidade: (cidade as string).trim(),
-      tipo,
-      subscriptionStatus: tipo === 'prestador' ? ('pending' as const) : undefined,
+      nome: (data?.nome as string) ?? (nome as string).trim(),
+      telefone: (data?.telefone as string) ?? (telefone as string).trim(),
+      cidade: (data?.cidade as string) ?? (cidade as string).trim(),
+      tipo: (data?.tipo as UserType) ?? tipo,
+      subscriptionStatus: data?.subscriptionStatus as 'pending' | 'active' | 'canceled' | 'past_due' | undefined,
     }
     return NextResponse.json({ ok: true, user })
   } catch (err) {
