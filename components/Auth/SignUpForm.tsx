@@ -39,15 +39,29 @@ export default function SignUpForm() {
     try {
       const uid = await signUp(email, password, nome, telefone, cidade, tipo)
 
+      // Criar documento do usuário no Firestore pelo servidor (evita "Missing or insufficient permissions" em produção).
+      const idToken = await auth?.currentUser?.getIdToken()
+      if (!idToken) {
+        setError('Erro ao obter sessão. Faça login novamente.')
+        setLoading(false)
+        return
+      }
+      const createRes = await fetch('/api/user/create-document', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ nome, telefone, cidade, tipo }),
+      })
+      const createData = await createRes.json().catch(() => ({}))
+      if (!createRes.ok) {
+        setError(createData.error || 'Erro ao criar perfil. Tente novamente.')
+        setLoading(false)
+        return
+      }
+      await refreshUserData()
+
       // Prestador: decidir no servidor se exige assinatura ou é gratuito (ver api/user/finalize-prestador-signup e REQUIRE_STRIPE_SUBSCRIPTION).
       // REVERSÃO: quando voltar a cobrar, basta definir REQUIRE_STRIPE_SUBSCRIPTION=true; o fluxo Stripe abaixo volta a ser usado.
       if (tipo === 'prestador') {
-        const idToken = await auth?.currentUser?.getIdToken()
-        if (!idToken) {
-          setError('Erro ao obter sessão. Faça login novamente.')
-          setLoading(false)
-          return
-        }
         const res = await fetch('/api/user/finalize-prestador-signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },

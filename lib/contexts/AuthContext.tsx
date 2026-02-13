@@ -85,43 +85,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     cidade: string,
     tipo: UserType
   ): Promise<string> => {
-    if (!auth || !db) throw new Error('Firebase não disponível')
+    if (!auth) throw new Error('Firebase não disponível')
     const userCredential = await createUserWithEmailAndPassword(auth, email, password)
     const user = userCredential.user
 
-    // Garante que o token do novo usuário está ativo antes de escrever no Firestore (evita "Missing or insufficient permissions" em produção).
     await user.getIdToken(true)
-
-    // Atualizar perfil do Firebase Auth
     await updateProfile(user, { displayName: nome })
 
-    // Criar documento no Firestore. Prestador começa com subscriptionStatus 'pending'; o API finalize-prestador-signup
-    // (conforme REQUIRE_STRIPE_SUBSCRIPTION) pode alterar para 'active' se cadastro for gratuito.
-    const payload: Omit<User, 'criadoEm'> & { criadoEm: any } = {
-      uid: user.uid,
-      nome,
-      tipo,
-      telefone,
-      cidade,
-      criadoEm: serverTimestamp(),
-    }
-    if (tipo === 'prestador') {
-      (payload as Record<string, unknown>).subscriptionStatus = 'pending'
-    }
-
-    await setDoc(doc(db, 'users', user.uid), payload)
-
-    // Atualizar state imediatamente
-    setUserData({
-      uid: user.uid,
-      nome,
-      tipo,
-      telefone,
-      cidade,
-      criadoEm: new Date(),
-      ...(tipo === 'prestador' && { subscriptionStatus: 'pending' as const }),
-    })
-
+    // Documento em Firestore é criado no servidor via POST /api/user/create-document (evita "Missing or insufficient permissions" em produção).
+    // O SignUpForm chama essa API após o signUp e depois refreshUserData().
     return user.uid
   }
 
