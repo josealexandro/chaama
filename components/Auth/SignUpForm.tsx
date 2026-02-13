@@ -17,7 +17,7 @@ export default function SignUpForm() {
   const [tipo, setTipo] = useState<UserType>('cliente')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const { signUp, signInWithGoogle, refreshUserData } = useAuth()
+  const { signUp, signInWithGoogle, setUserDataFromSignup } = useAuth()
   const router = useRouter()
 
   const handleSubmit = async (e: FormEvent) => {
@@ -57,7 +57,17 @@ export default function SignUpForm() {
         setLoading(false)
         return
       }
-      await refreshUserData()
+      // Atualiza o estado a partir da resposta da API (não lê do Firestore, evita erro de permissão).
+      if (createData.user) {
+        setUserDataFromSignup({
+          uid: createData.user.uid,
+          nome: createData.user.nome,
+          telefone: createData.user.telefone,
+          cidade: createData.user.cidade,
+          tipo: createData.user.tipo,
+          subscriptionStatus: createData.user.subscriptionStatus,
+        })
+      }
 
       // Prestador: decidir no servidor se exige assinatura ou é gratuito (ver api/user/finalize-prestador-signup e REQUIRE_STRIPE_SUBSCRIPTION).
       // REVERSÃO: quando voltar a cobrar, basta definir REQUIRE_STRIPE_SUBSCRIPTION=true; o fluxo Stripe abaixo volta a ser usado.
@@ -68,7 +78,7 @@ export default function SignUpForm() {
         })
         const data = await res.json().catch(() => ({}))
         if (data.requireSubscription === false) {
-          await refreshUserData()
+          setUserDataFromSignup({ uid: createData.user.uid, nome: createData.user.nome, telefone: createData.user.telefone, cidade: createData.user.cidade, tipo: 'prestador', subscriptionStatus: 'active' })
           router.push('/prestador/cadastro')
           return
         }

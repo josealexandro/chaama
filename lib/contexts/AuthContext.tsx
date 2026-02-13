@@ -24,6 +24,8 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>
   logout: () => Promise<void>
   refreshUserData: () => Promise<void>
+  /** Atualiza userData a partir do signup (evita leitura no Firestore logo após cadastro). */
+  setUserDataFromSignup: (data: Pick<User, 'uid' | 'nome' | 'telefone' | 'cidade' | 'tipo'> & { subscriptionStatus?: User['subscriptionStatus'] }) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -147,6 +149,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const setUserDataFromSignup = (data: Pick<User, 'uid' | 'nome' | 'telefone' | 'cidade' | 'tipo'> & { subscriptionStatus?: User['subscriptionStatus'] }) => {
+    setUserData({
+      uid: data.uid,
+      nome: data.nome,
+      telefone: data.telefone,
+      cidade: data.cidade,
+      tipo: data.tipo,
+      criadoEm: new Date(),
+      subscriptionStatus: data.subscriptionStatus,
+    })
+  }
+
   const value: AuthContextType = {
     currentUser,
     userData,
@@ -156,6 +170,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signInWithGoogle,
     logout,
     refreshUserData,
+    setUserDataFromSignup,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

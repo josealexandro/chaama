@@ -55,7 +55,16 @@ export async function POST(request: NextRequest) {
       payload.subscriptionStatus = 'pending'
     }
     await userRef.set(payload)
-    return NextResponse.json({ ok: true })
+    // Devolve os dados do usuário para o cliente atualizar o estado sem ler do Firestore (evita "Missing or insufficient permissions").
+    const user = {
+      uid,
+      nome: (nome as string).trim(),
+      telefone: (telefone as string).trim(),
+      cidade: (cidade as string).trim(),
+      tipo,
+      subscriptionStatus: tipo === 'prestador' ? ('pending' as const) : undefined,
+    }
+    return NextResponse.json({ ok: true, user })
   } catch (err) {
     console.error('[create-document]', err)
     return NextResponse.json(
