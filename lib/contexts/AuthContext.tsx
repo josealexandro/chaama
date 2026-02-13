@@ -44,6 +44,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setCurrentUser(user)
       
       if (user) {
+        // Garante que o token está ativo antes de ler Firestore (evita "Missing or insufficient permissions" no Listen/getDoc).
+        await user.getIdToken(true)
         // Buscar dados do usuário no Firestore (dbRef já validado no início do effect)
         const userDoc = await getDoc(doc(dbRef, 'users', user.uid))
         if (userDoc.exists()) {
