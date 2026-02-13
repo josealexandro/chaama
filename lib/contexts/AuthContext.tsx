@@ -89,6 +89,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password)
     const user = userCredential.user
 
+    // Garante que o token do novo usuário está ativo antes de escrever no Firestore (evita "Missing or insufficient permissions" em produção).
+    await user.getIdToken(true)
+
     // Atualizar perfil do Firebase Auth
     await updateProfile(user, { displayName: nome })
 
